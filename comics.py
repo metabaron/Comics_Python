@@ -98,7 +98,6 @@ for line in dirList:
         g.write('\nCreated directory: ' + fileNameNoNumbers)
     except OSError, e:
         if e.errno != errno.EEXIST:
-            raise
         else:
             g.write('\nDirectory already exist: final/' + fileNameNoNumbers)
     
