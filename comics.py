@@ -16,7 +16,6 @@
 import re, os, errno, shutil
 
 #Reading file
-#f = open('list.txt', 'r')
 g = open('log.txt', 'w')
 
 #^\([^()]*\) Line starting by parentheses
@@ -31,8 +30,8 @@ parenthesis = re.compile('\(.*?\)')
 #WRONG yearBetweenParenthesis = re.compile('\(([0-9]*)\)')
 #\((19[0-9]{2}|20[0-9]{2})\) Year between parenthesis
 yearBetweenParenthesis = re.compile('\((19[0-9]{2}|20[0-9]{2})\)')
-#([0-9]+).* Numbers
-numbers = re.compile('([0-9]+).*')
+#[ ]([0-9]+).* Numbers
+numbers = re.compile('[ ]([0-9]+).')
 #(19[0-9]{2}|20[0-9]{2}) Year
 years = re.compile('(19[0-9]{2}|20[0-9]{2})')
 #^0+ Leading 0s
@@ -47,7 +46,7 @@ except OSError, e:
     if e.errno != errno.EEXIST:
         raise
     else:
-        g.write('\nDirectory already exist: final/errors')
+        g.write('\nDirectory already exist: final/errors\n')
     
 #For each file
 #for line in f:
@@ -57,7 +56,6 @@ for line in dirList:
     issueValue = ''
     
     #Remove extension
-    #fileNameNoExtension = lastPoint.sub('', line.strip(' \t\n\r'))
     fileNameNoExtension, fileExtension = os.path.splitext(line.strip(' \t\n\r'))
     #Remove first set of parentheses if the line start with them
     lineNoStartParentheses = lineStartParentheses.sub('', fileNameNoExtension.strip(' \t\n\r'))
@@ -80,14 +78,14 @@ for line in dirList:
         
     #Remove year
     fileNameNoParenthesis = years.sub('', fileNameNoParenthesis).strip(' \t\n\r')
+    g.write('\nJust filename: ' + fileNameNoParenthesis)
     
     #Search for issue numbers
     #And remove leading 0s
     issue = numbers.search(fileNameNoParenthesis)
     if issue:
-        cleanedIssueNumber = afterNumbers.sub('', issue.group(0))
-        issueValue = ' - Issue ' + zeros.sub('', cleanedIssueNumber)
-        #issueValue = ' - Issue ' + zeros.sub('', issue.group(0))
+        issueValue = ' - Issue' + zeros.sub('', issue.group(0))
+        g.write('\nCleaned: ' + issueValue)
     
     #Remove numbers
     fileNameNoNumbers = numbers.sub('', fileNameNoParenthesis).strip(' \t\n\r')
@@ -95,11 +93,9 @@ for line in dirList:
     #Create directories
     try:
         os.makedirs('final/' + fileNameNoNumbers)
-        g.write('\nCreated directory: ' + fileNameNoNumbers)
+        g.write('\nDirectory created: ' + fileNameNoNumbers)
     except OSError, e:
-        if e.errno != errno.EEXIST:
-        else:
-            g.write('\nDirectory already exist: final/' + fileNameNoNumbers)
+        g.write('\nDirectory already exist: final/' + fileNameNoNumbers)
     
     #Concat all Strings for the log file
     finalFileName = fileNameNoNumbers.strip(' \t\n\r') + issueValue + yearValue
@@ -107,12 +103,9 @@ for line in dirList:
     g.write('\n')
     
     #Move file
-    #try:
     if(os.path.exists(fileNameNoNumbers + '/' + finalFileName + fileExtension)):
         g.write('\nFile already exist: ' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
     else:
         shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
-    #except OSError, e:
     
-#f.close()
 g.close()
