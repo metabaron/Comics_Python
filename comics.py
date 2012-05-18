@@ -15,7 +15,7 @@
 #importing regular expression
 import re, os, errno, shutil
 
-#Reading file
+#Log file
 g = open('log.txt', 'w')
 
 #^\([^()]*\) Line starting by parentheses
@@ -36,8 +36,12 @@ numbers = re.compile('[ ]([0-9]+).')
 years = re.compile('(19[0-9]{2}|20[0-9]{2})')
 #^0+ Leading 0s
 zeros = re.compile('^0+')
-#[^0-9].*$ all after the first numbers
-afterNumbers = re.compile('[^0-9].*$')
+#(\d+)(?!.*\d) last numbers
+afterNumbers = re.compile('(\d+)(?!.*\d)')
+#[ ]{2,} multiple spaces characters
+multipleSpaces = re.compile('[ ]{2,}')
+#[01][0-9][ -/.][01][0-9][ -/.][01][0-9] find date
+dateRemove = re.compile('[01][0-9][ -/.][01][0-9][ -/.][01][0-9]')
 
 #Directory to store all errors
 try:
@@ -61,7 +65,7 @@ for line in dirList:
     lineNoStartParentheses = lineStartParentheses.sub('', fileNameNoExtension.strip(' \t\n\r'))
     g.write('\nInitial filename: ' + lineNoStartParentheses)
     #Replace underscores by spaces
-    noUnderscores = underscores.sub('rrrrr', lineNoStartParentheses.strip(' \t\n\r'))
+    noUnderscores = underscores.sub(' ', lineNoStartParentheses.strip(' \t\n\r'))
     
     #Search for year between parenthesis
     year = yearBetweenParenthesis.search(noUnderscores)
@@ -69,7 +73,7 @@ for line in dirList:
         yearValue = ' - Year ' + year.group(1)
     
     #Remove all parenthesis
-    fileNameNoParenthesis = parenthesis.sub('', fileNameNoExtension).strip(' \t\n\r')
+    fileNameNoParenthesis = parenthesis.sub('', noUnderscores).strip(' \t\n\r')
     
     #if we cannot find the year, maybe it's not within parenthesis?
     year = years.search(fileNameNoParenthesis)
@@ -77,18 +81,19 @@ for line in dirList:
         yearValue = ' - Year ' + year.group(1)
         
     #Remove year
-    fileNameNoParenthesis = years.sub('', fileNameNoParenthesis).strip(' \t\n\r')
+    fileNameNoParenthesis = dateRemove.sub('', years.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
     g.write('\nJust filename: ' + fileNameNoParenthesis)
     
     #Search for issue numbers
-    #And remove leading 0s
-    issue = numbers.search(fileNameNoParenthesis)
+    #And remove leading 0s. Once done, check format so that
+    # 1 ==> 001, 10 ==> 010 and 100 ==> 100
+    issue = afterNumbers.search(fileNameNoParenthesis)
     if issue:
-        issueValue = ' - Issue' + zeros.sub('', issue.group(0))
-        g.write('\nCleaned: ' + issueValue)
+        issueValue = ' - Issue ' + zeros.sub('', issue.group(0)).zfill(3) 
+        g.write('\nCleaned issue number: ' + issueValue + ' and year: ' + yearValue)
     
     #Remove numbers
-    fileNameNoNumbers = numbers.sub('', fileNameNoParenthesis).strip(' \t\n\r')
+    fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
     
     #Create directories
     try:

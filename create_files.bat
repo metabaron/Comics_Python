@@ -1,3 +1,4 @@
+rmdir /s /q final
 echo.>comics_to_rename/"Ultimate Avengers 2 01 (2010) (Digital) (Zone-Empire).cbr"
 echo.>comics_to_rename/"Ultimate Avengers 2 02 (2010) (Digital) (Zone-Empire).cbr"
 echo.>comics_to_rename/"Ultimate Avengers 2 03 (2010) (Digital) (Zone-Empire).cbr"
@@ -11,7 +12,6 @@ echo.>comics_to_rename/"(TIT) Lenore v2 05 (2c)(c2c).cbr"
 echo.>comics_to_rename/"Night Force 02 of 07 2012 digital Empire .cbz"
 echo.>comics_to_rename/"The Boys 65 2012 Minutemen DTs.cbz"
 echo.>comics_to_rename/"03-21-12 Justice League Beyond 04 (Digital Only).cbr"
-
 echo.>comics_to_rename/"Action Comics 08 2012 Minutemen-DTs.cbz"
 echo.>comics_to_rename/"Action Comics 08 2012 Minutemen-DTs.cbz"
 echo.>comics_to_rename/"Age of Apocalypse 002 (2012) (digital-TheGroup).cbr"
@@ -189,4 +189,3 @@ echo.>comics_to_rename/"Vampirella vs. Dracula 003 (2012) (digital-Empire).cbr"
 echo.>comics_to_rename/"Wasteland 036 (2012) (Digital) (Zone-Empire).cbr"
 echo.>comics_to_rename/"Winter Soldier 004 (2012) (Megan-Empire).cbr"
 echo.>comics_to_rename/"Wolverine 304 (2012) (digital-TheGroup).cbr"
-GOTO:EOF
