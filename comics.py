@@ -3,7 +3,9 @@
 
 #Let's retrieve the filename passed as argument
 #!/usr/bin/python
-#import sys, re
+
+#importing regular expression
+import re, os, errno, shutil
 
 
 #print 'Number of arguments:', len(sys.argv), 'arguments.'
@@ -12,8 +14,10 @@
 #print 'Filename:', str(filename)
 #print 'Filename without extension:', filename.split('.', 1)[0]
 
-#importing regular expression
-import re, os, errno, shutil
+
+#
+#DEAL WITH MULTIPLE SAME NAME
+#
 
 #Log file
 g = open('log.txt', 'w')
@@ -41,7 +45,8 @@ afterNumbers = re.compile('(\d+)(?!.*\d)')
 #[ ]{2,} multiple spaces characters
 multipleSpaces = re.compile('[ ]{2,}')
 #[01][0-9][ -/.][01][0-9][ -/.][01][0-9] find date
-dateRemove = re.compile('[01][0-9][ -/.][01][0-9][ -/.][01][0-9]')
+#dateRemove = re.compile('[01][0-9][ -/.][01][0-9][ -/.][01][0-9]')
+dateRemove = re.compile('(0[1-9]|1[012])[ -/.](0[1-9]|[12][0-9]|3[01])[ -/.](0[0-9]|1[0-9])')
 
 #Directory to store all errors
 try:
@@ -61,28 +66,33 @@ for line in dirList:
     
     #Remove extension
     fileNameNoExtension, fileExtension = os.path.splitext(line.strip(' \t\n\r'))
+    g.write('\nInitial filename: ' + line)
     #Remove first set of parentheses if the line start with them
     lineNoStartParentheses = lineStartParentheses.sub('', fileNameNoExtension.strip(' \t\n\r'))
     g.write('\nInitial filename: ' + lineNoStartParentheses)
     #Replace underscores by spaces
     noUnderscores = underscores.sub(' ', lineNoStartParentheses.strip(' \t\n\r'))
+    g.write('\nnoUnderscores filename: ' + noUnderscores)
     
     #Search for year between parenthesis
     year = yearBetweenParenthesis.search(noUnderscores)
     if year:
         yearValue = ' - Year ' + year.group(1)
+        g.write('\nyear filename: ' + yearValue)
     
     #Remove all parenthesis
     fileNameNoParenthesis = parenthesis.sub('', noUnderscores).strip(' \t\n\r')
+    g.write('\nfileNameNoParenthesis filename: ' + fileNameNoParenthesis)
     
     #if we cannot find the year, maybe it's not within parenthesis?
     year = years.search(fileNameNoParenthesis)
     if year:
         yearValue = ' - Year ' + year.group(1)
+        g.write('\nyear filename: ' + yearValue)
         
     #Remove year
     fileNameNoParenthesis = dateRemove.sub('', years.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
-    g.write('\nJust filename: ' + fileNameNoParenthesis)
+    g.write('\nfileNameNoParenthesis filename: ' + fileNameNoParenthesis)
     
     #Search for issue numbers
     #And remove leading 0s. Once done, check format so that
@@ -90,17 +100,19 @@ for line in dirList:
     issue = afterNumbers.search(fileNameNoParenthesis)
     if issue:
         issueValue = ' - Issue ' + zeros.sub('', issue.group(0)).zfill(3) 
-        g.write('\nCleaned issue number: ' + issueValue + ' and year: ' + yearValue)
+        #g.write('\nCleaned issue number: ' + issueValue + ' and year: ' + yearValue)
+        g.write('\nissueValue filename: ' + issueValue)
     
     #Remove numbers
     fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
+    g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
     #Create directories
     try:
         os.makedirs('final/' + fileNameNoNumbers)
         g.write('\nDirectory created: ' + fileNameNoNumbers)
     except OSError, e:
-        g.write('\nDirectory already exist: final/' + fileNameNoNumbers)
+        g.write('\nDirectory already exists: final/' + fileNameNoNumbers)
     
     #Concat all Strings for the log file
     finalFileName = fileNameNoNumbers.strip(' \t\n\r') + issueValue + yearValue
@@ -109,7 +121,7 @@ for line in dirList:
     
     #Move file
     if(os.path.exists(fileNameNoNumbers + '/' + finalFileName + fileExtension)):
-        g.write('\nFile already exist: ' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
+        g.write('\nFile already exists: ' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
     else:
         shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
     
