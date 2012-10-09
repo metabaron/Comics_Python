@@ -44,9 +44,10 @@ zeros = re.compile('^0+')
 afterNumbers = re.compile('(\d+)(?!.*\d)')
 #[ ]{2,} multiple spaces characters
 multipleSpaces = re.compile('[ ]{2,}')
-#[01][0-9][ -/.][01][0-9][ -/.][01][0-9] find date
-#dateRemove = re.compile('[01][0-9][ -/.][01][0-9][ -/.][01][0-9]')
+#(0[1-9]|1[012])[ -/.](0[1-9]|[12][0-9]|3[01])[ -/.](0[0-9]|1[0-9]) find date
 dateRemove = re.compile('(0[1-9]|1[012])[ -/.](0[1-9]|[12][0-9]|3[01])[ -/.](0[0-9]|1[0-9])')
+#remove 'v' at end of file's name for 'volume'
+volumeVersion = re.compile('[ ]v$')
 
 #Directory to store all errors
 try:
@@ -107,22 +108,30 @@ for line in dirList:
     fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
     g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
+    #Clean filename
+    fileNameFinal1 = fileNameNoNumbers.replace('Digital Zone Empire', '').strip(' \t\n\r')
+    fileNameFinal2 = fileNameFinal1.replace('by Nook', '').strip(' \t\n\r')
+    fileNameFinal3 = fileNameFinal2.replace('Minutemen DTs', '').strip(' \t\n\r')
+    fileNameFinal4 = fileNameFinal2.replace('digital Empire', '').strip(' \t\n\r')
+    fileNameFinal = fileNameFinal2.replace('Minutemen-DTs', '').strip(' \t\n\r')
+    
     #Create directories
     try:
-        os.makedirs('final/' + fileNameNoNumbers)
-        g.write('\nDirectory created: ' + fileNameNoNumbers)
+        os.makedirs('final/' + fileNameFinal)
+        g.write('\nDirectory created: ' + fileNameFinal)
     except OSError, e:
-        g.write('\nDirectory already exists: final/' + fileNameNoNumbers)
+        g.write('\nDirectory already exists: final/' + fileNameFinal)
     
     #Concat all Strings for the log file
-    finalFileName = fileNameNoNumbers.strip(' \t\n\r') + issueValue + yearValue
-    g.write('\n' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
+    finalFileName = fileNameFinal.strip(' \t\n\r') + issueValue + yearValue
+    g.write('\n' + fileNameFinal + '/' + finalFileName + fileExtension)
     g.write('\n')
     
     #Move file
-    if(os.path.exists(fileNameNoNumbers + '/' + finalFileName + fileExtension)):
-        g.write('\nFile already exists: ' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
+    if(os.path.exists(fileNameFinal + '/' + finalFileName + fileExtension)):
+        g.write('\nFile already exists: ' + fileNameFinal + '/' + finalFileName + fileExtension)
     else:
-        shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameNoNumbers + '/' + finalFileName + fileExtension)
+        #g.write('comics_to_rename/' + fileNameNoExtension + fileExtension + ' AND ' + 'final/' + fileNameFinal + '/' + finalFileName + fileExtension)
+        shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + finalFileName + fileExtension)
     
 g.close()
