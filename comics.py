@@ -108,7 +108,8 @@ for line in dirList:
     fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
     g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
-    #Clean filename
+    #Clean filename of release teams
+    #Dirty - case sensitive - but would do the trick (we can use "compile" as previously in this file)
     fileNameFinal1 = fileNameNoNumbers.replace('Digital Zone Empire', '').strip(' \t\n\r')
     fileNameFinal2 = fileNameFinal1.replace('by Nook', '').strip(' \t\n\r')
     fileNameFinal3 = fileNameFinal2.replace('Minutemen DTs', '').strip(' \t\n\r')
@@ -125,13 +126,14 @@ for line in dirList:
     #Concat all Strings for the log file
     finalFileName = fileNameFinal.strip(' \t\n\r') + issueValue + yearValue
     g.write('\n' + fileNameFinal + '/' + finalFileName + fileExtension)
+    
+    #Move file with correct name
+    fileNameFinalVerification = fileNameFinal
+    loop = 1
+    while(os.path.isfile('final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)):
+        g.write('\nFile already exists: ' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
+        fileNameFinalVerification = fileNameFinal + str(loop)
+        loop += 1
+    shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
     g.write('\n')
-    
-    #Move file
-    if(os.path.exists(fileNameFinal + '/' + finalFileName + fileExtension)):
-        g.write('\nFile already exists: ' + fileNameFinal + '/' + finalFileName + fileExtension)
-    else:
-        #g.write('comics_to_rename/' + fileNameNoExtension + fileExtension + ' AND ' + 'final/' + fileNameFinal + '/' + finalFileName + fileExtension)
-        shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + finalFileName + fileExtension)
-    
 g.close()
