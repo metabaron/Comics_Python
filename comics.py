@@ -132,7 +132,7 @@ for line in dirList:
     loop = 1
     while(os.path.isfile('final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)):
         g.write('\nFile already exists: ' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
-        fileNameFinalVerification = fileNameFinal + str(loop)
+        fileNameFinalVerification = fileNameFinal + ' - Copy ' + str(loop)
         loop += 1
     shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
     g.write('\n')
