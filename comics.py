@@ -50,6 +50,12 @@ dateRemove = re.compile('(0[1-9]|1[012])[ -/.](0[1-9]|[12][0-9]|3[01])[ -/.](0[0
 volumeVersion = re.compile('[ ]v$')
 #[\d]*[ ]of[ ][\d]* look for 'xx of xx' in filename
 xxOfxx  = re.compile('[\d]+[ ]of[ ][\d]+')
+#v[\d]+ c[\d]+ looking for 'cxx' kind of issue version
+cxx = re.compile('v[\d]+ c[\d]+')
+# '#|v\d+!$|\.| v | - $' Deal with version issues linked to filename
+extra = re.compile('#|v\d+!$|\.| v | - $')
+#\d+[\-]\d+ multiple episodes in one file
+multipleEpisode = re.compile('\d+[\-]\d+')
 
 #Directory to store all errors
 try:
@@ -95,19 +101,25 @@ for line in dirList:
         
     #Remove year
     fileNameNoParenthesis = dateRemove.sub('', years.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
-    g.write('\nfileNameNoParenthesis filename: ' + fileNameNoParenthesis)
     
     #Search for issue numbers
     #And remove leading 0s. Once done, check format so that
     # 1 ==> 001, 10 ==> 010 and 100 ==> 100
+    g.write('\nMultiple episodes?: ' + multipleEpisode.search(fileNameNoParenthesis))
     issue = afterNumbers.search(fileNameNoParenthesis)
+    g.write('\nfileNameNoParenthesis filename: ' + fileNameNoParenthesis)
     if issue:
         issueValue = ' - Issue ' + zeros.sub('', issue.group(0)).zfill(3) 
         #g.write('\nCleaned issue number: ' + issueValue + ' and year: ' + yearValue)
         g.write('\nissueValue filename: ' + issueValue)
     
     #Remove numbers
-    fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', xxOfxx.sub('', fileNameNoParenthesis)).strip(' \t\n\r'))
+	#fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', xxOfxx.sub('', cxx.sub('', extra.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+	fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+	g.write('\n' + afterNumbers.sub('', fileNameNoParenthesis))
+	g.write('\n' + extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))
+	g.write('\n' + cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis))))
+	g.write('\n' + multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis))))))
     g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
     #Clean filename of release teams
