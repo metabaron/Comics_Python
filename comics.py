@@ -113,8 +113,8 @@ for line in dirList:
     fileNameFinal1 = fileNameNoNumbers.replace('Digital Zone Empire', '').strip(' \t\n\r')
     fileNameFinal2 = fileNameFinal1.replace('by Nook', '').strip(' \t\n\r')
     fileNameFinal3 = fileNameFinal2.replace('Minutemen DTs', '').strip(' \t\n\r')
-    fileNameFinal4 = fileNameFinal2.replace('digital Empire', '').strip(' \t\n\r')
-    fileNameFinal = fileNameFinal2.replace('Minutemen-DTs', '').strip(' \t\n\r')
+    fileNameFinal4 = fileNameFinal3.replace('digital Empire', '').strip(' \t\n\r')
+    fileNameFinal = fileNameFinal4.replace('Minutemen-DTs', '').strip(' \t\n\r')
     
     #Create directories
     try:
