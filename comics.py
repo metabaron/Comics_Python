@@ -48,6 +48,8 @@ multipleSpaces = re.compile('[ ]{2,}')
 dateRemove = re.compile('(0[1-9]|1[012])[ -/.](0[1-9]|[12][0-9]|3[01])[ -/.](0[0-9]|1[0-9])')
 #remove 'v' at end of file's name for 'volume'
 volumeVersion = re.compile('[ ]v$')
+#[\d]*[ ]of[ ][\d]* look for 'xx of xx' in filename
+xxOfxx  = re.compile('[\d]+[ ]of[ ][\d]+')
 
 #Directory to store all errors
 try:
@@ -105,7 +107,7 @@ for line in dirList:
         g.write('\nissueValue filename: ' + issueValue)
     
     #Remove numbers
-    fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', fileNameNoParenthesis).strip(' \t\n\r'))
+    fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', xxOfxx.sub('', fileNameNoParenthesis)).strip(' \t\n\r'))
     g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
     #Clean filename of release teams
