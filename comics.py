@@ -36,8 +36,10 @@ parenthesis = re.compile('\(.*?\)')
 yearBetweenParenthesis = re.compile('\((19[0-9]{2}|20[0-9]{2})\)')
 #[ ]([0-9]+).* Numbers
 numbers = re.compile('[ ]([0-9]+).')
-#(19[0-9]{2}|20[0-9]{2}) Year
-years = re.compile('19[0-9]{2}|20[0-9]{2}')
+##(19[0-9]{2}|20[0-9]{2}) Year
+#years = re.compile('19[0-9]{2}|20[0-9]{2}')
+#(19[0-9]{2}|20[0-9]{2})([-.]\d\d)?([-.]\d\d)? Year
+years = re.compile('(19[0-9]{2}|20[0-9]{2})([-.]\d\d)?([-.]\d\d)?')
 #^0+ Leading 0s
 zeros = re.compile('^0+')
 #(\d+)(?!.*\d) last numbers
@@ -56,6 +58,10 @@ cxx = re.compile('v[\d]+ c[\d]+')
 extra = re.compile('#|v\d+!$|\.| v | - $')
 #[ ][\d]+-[\d]+($| ) multiple episodes in one file
 multipleEpisode = re.compile('[ ][\d]+-[\d]+($| )')
+#(\d+) (of|Of|OF) extract first xx of 'xx of xx'
+firstXxOf = re.compile('(\d+) (of|Of|OF)')
+#\d+ extract numbers
+numbersExtract = re.compile('\d+')
 
 
 #Directory to store all errors
@@ -108,16 +114,28 @@ for line in dirList:
     #And remove leading 0s. Once done, check format so that
     # 1 ==> 001, 10 ==> 010 and 100 ==> 100
     issue = multipleEpisode.search(fileNameNoParenthesis)
+    fileNameNoNumbers = fileNameNoParenthesis
     if issue != None:
         g.write('\nMultiple episodes?:' + issue.group(0).strip(' '))
         issueValue = ' - Issue ' + zeros.sub('', issue.group(0).strip(' '))
-        fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', multipleEpisode.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+        #fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', multipleEpisode.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+        fileNameNoNumbers = multipleSpaces.sub(' ', cxx.sub('', extra.sub('', multipleEpisode.sub('', xxOfxx.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+        g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     else:
-        issue = afterNumbers.search(fileNameNoParenthesis)
-        if issue:
-            issueValue = ' - Issue ' + zeros.sub('', issue.group(0)).zfill(3)
+        if xxOfxx.search(fileNameNoNumbers) != None:
+            #If we are in 'xx of xx' we extract it and extract issue number from it
+            xOFx = firstXxOf.search(fileNameNoNumbers).group(0)
+            issueValue = ' - Issue ' + zeros.sub('', numbersExtract.search(xOFx).group(0)).zfill(3)
             g.write('\nissueValue filename: ' + issueValue)
-            fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+            fileNameNoNumbers = multipleSpaces.sub(' ', cxx.sub('', extra.sub('', afterNumbers.sub('', xxOfxx.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+        else:
+            issue = afterNumbers.search(fileNameNoParenthesis)
+            if issue:
+                issueValue = ' - Issue ' + zeros.sub('', issue.group(0)).zfill(3)
+                g.write('\nissueValue filename: ' + issueValue)
+                #fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+                fileNameNoNumbers = multipleSpaces.sub(' ', cxx.sub('', extra.sub('', afterNumbers.sub('', xxOfxx.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
+                g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     #Remove numbers
 	#fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', xxOfxx.sub('', cxx.sub('', extra.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
     ##fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
@@ -125,7 +143,7 @@ for line in dirList:
 	#g.write('\n' + extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))
 	#g.write('\n' + cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis))))
 	#g.write('\n' + multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis))))))
-    g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
+    #g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
     #Clean filename of release teams
     #Dirty - case sensitive - but would do the trick (we can use "compile" as previously in this file)
@@ -147,11 +165,11 @@ for line in dirList:
     g.write('\n' + fileNameFinal + '/' + finalFileName + fileExtension)
     
     #Move file with correct name
-    fileNameFinalVerification = fileNameFinal
+    fileNameFinalVerification = finalFileName
     loop = 1
     while(os.path.isfile('final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)):
         g.write('\nFile already exists: ' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
-        fileNameFinalVerification = fileNameFinal + ' - Copy ' + str(loop)
+        fileNameFinalVerification = finalFileName + ' - Copy ' + str(loop)
         loop += 1
     shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
     g.write('\n')
