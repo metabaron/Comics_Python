@@ -152,6 +152,7 @@ for line in dirList:
     fileNameFinal3 = fileNameFinal2.replace('Minutemen DTs', '').strip(' \t\n\r')
     fileNameFinal4 = fileNameFinal3.replace('digital Empire', '').strip(' \t\n\r')
     fileNameFinal = fileNameFinal4.replace('Minutemen-DTs', '').strip(' \t\n\r')
+    fileNameFinal = multipleSpaces.sub(' ', fileNameFinal).strip(' \t\n\r')
     
     #Create directories
     try:
@@ -161,6 +162,7 @@ for line in dirList:
         g.write('\nDirectory already exists: final/' + fileNameFinal)
     
     #Concat all Strings for the log file
+    #finalFileName = multipleSpaces.sub(' ', fileNameFinal).strip(' \t\n\r') + issueValue + yearValue
     finalFileName = fileNameFinal.strip(' \t\n\r') + issueValue + yearValue
     g.write('\n' + fileNameFinal + '/' + finalFileName + fileExtension)
     
