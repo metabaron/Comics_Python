@@ -19,9 +19,10 @@ if len(remainder) > 0:
 for opt, arg in options:
     if opt in ('-d', '--dry-run'):
         dryRun = True
+        helpInfo = False
     if opt in ('-h', '--help'):
         helpInfo = True
-
+        
 if helpInfo == True:
     print ''
     print 'Rename and move your comics to directory \'final\''
