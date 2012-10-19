@@ -1,23 +1,41 @@
-#^([^"]+)" to replace all before the first "
-#[^"a]*$ to replace everything after the last "
-
-#Let's retrieve the filename passed as argument
 #!/usr/bin/python
 
 #importing regular expression
-import re, os, errno, shutil
+import re, os, errno, shutil, sys, getopt
 
+dryRun = False
+helpInfo = True
+sourceDirectory = 'comics_to_rename'
 
-#print 'Number of arguments:', len(sys.argv), 'arguments.'
-#print 'Argument List:', str(sys.argv)
-#filename = sys.argv[1]
-#print 'Filename:', str(filename)
-#print 'Filename without extension:', filename.split('.', 1)[0]
+#options, remainder = getopt.getopt(sys.argv[1:], 'd:', ['dry-run='])
+options, remainder = getopt.getopt(sys.argv[1:], 'dh', ['dry-run', 'help'])
+#print 'OPTIONS   :', options
+#print 'REMAINDER :', remainder
 
+if len(remainder) > 0:
+    sourceDirectory = remainder[0]
+    helpInfo = False
 
-#
-#DEAL WITH MULTIPLE SAME NAME
-#
+for opt, arg in options:
+    if opt in ('-d', '--dry-run'):
+        dryRun = True
+    if opt in ('-h', '--help'):
+        helpInfo = True
+
+if helpInfo == True:
+    print ''
+    print 'Rename and move your comics to directory \'final\''
+    print 'Will create one sub directory by serie'
+    print ''
+    print 'Coded by Metabaron'
+    print ''
+    print 'Usage: python comics.py [-d | -h] source'
+    print 'Will read files from \'source\', rename and move them to \'final\''
+    print 'Per default, source directory is \'comics_to_rename\''
+    print ''
+    print '-h\t--help   \tThis help screen'
+    print '-d\t--dry-run\tDry run. Same as normal run but no delete'
+    sys.exit()
 
 #Log file
 g = open('log.txt', 'w')
@@ -74,8 +92,7 @@ except OSError, e:
         g.write('\nDirectory already exist: final/errors\n')
     
 #For each file
-#for line in f:
-dirList=os.listdir('comics_to_rename/')
+dirList=os.listdir(sourceDirectory)
 for line in dirList:
     yearValue = ''
     issueValue = ''
@@ -136,14 +153,6 @@ for line in dirList:
                 #fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
                 fileNameNoNumbers = multipleSpaces.sub(' ', cxx.sub('', extra.sub('', afterNumbers.sub('', xxOfxx.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
                 g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
-    #Remove numbers
-	#fileNameNoNumbers = multipleSpaces.sub(' ', afterNumbers.sub('', xxOfxx.sub('', cxx.sub('', extra.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
-    ##fileNameNoNumbers = multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))).strip(' \t\n\r'))
-	#g.write('\n' + afterNumbers.sub('', fileNameNoParenthesis))
-	#g.write('\n' + extra.sub('', afterNumbers.sub('', fileNameNoParenthesis)))
-	#g.write('\n' + cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis))))
-	#g.write('\n' + multipleSpaces.sub(' ', xxOfxx.sub('', cxx.sub('', extra.sub('', afterNumbers.sub('', fileNameNoParenthesis))))))
-    #g.write('\nfileNameNoNumbers filename: ' + fileNameNoNumbers)
     
     #Clean filename of release teams
     #Dirty - case sensitive - but would do the trick (we can use "compile" as previously in this file)
@@ -162,7 +171,6 @@ for line in dirList:
         g.write('\nDirectory already exists: final/' + fileNameFinal)
     
     #Concat all Strings for the log file
-    #finalFileName = multipleSpaces.sub(' ', fileNameFinal).strip(' \t\n\r') + issueValue + yearValue
     finalFileName = fileNameFinal.strip(' \t\n\r') + issueValue + yearValue
     g.write('\n' + fileNameFinal + '/' + finalFileName + fileExtension)
     
@@ -173,6 +181,11 @@ for line in dirList:
         g.write('\nFile already exists: ' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
         fileNameFinalVerification = finalFileName + ' - Copy ' + str(loop)
         loop += 1
-    shutil.move('comics_to_rename/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
+    if dryRun == False:
+        shutil.move(sourceDirectory + '/' + fileNameNoExtension + fileExtension, 'final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension)
+    else:
+        file = open('final/' + fileNameFinal + '/' + fileNameFinalVerification + fileExtension, 'w')
+        file.write('')
+        file.close()
     g.write('\n')
 g.close()
